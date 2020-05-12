@@ -42,13 +42,21 @@ var solutionFitnessChart = new Chart(ctx, {
     }
 });
 
+// Global variables
 const worker = new Worker('web-worker.js');
+var recievedSolutionsArray = [];
 
 
 // Handling logic and calculations, communicating with worker
-var recievedSolutionsArray = [];
 
 document.getElementById('btn-solve').addEventListener('click', () => {
+    solveHandler();
+    createTable();
+});
+
+// private handlers
+
+function solveHandler() {
     // emptying intermediateSolutions before getting new solutions
     recievedSolutionsArray = [];
 
@@ -77,6 +85,9 @@ document.getElementById('btn-solve').addEventListener('click', () => {
                 // updata info
                 document.getElementById('h5-numSolutions').innerHTML = `num Solutions: ${recievedSolutionsArray.length}`
 
+                // update table
+                createTable(solutionFromWorker);
+
                 break;
 
             case 'numFlights':
@@ -92,7 +103,65 @@ document.getElementById('btn-solve').addEventListener('click', () => {
     }
 
     worker.postMessage({ functionName: 'createInitialSolutions', args: [fleetSize, adjMat, airportsArr, hubs, maintFreq, maintDuration, maxNumSolutions] })
+}
 
-});
+function createTable(solutionObj) {
+    const table = document.getElementById('schedule');
+    var theadtr = '<th></th>'
+    for (let i=0; i<fleetSize; i++) {
+        theadtr += `<th>AC${i}</th>`
+    }
+    const tArray = []
+    for (let i=0; i<fleetSize; i++) {
+        tArray.push(solutionObj.solution[i].length);
+        console.log(i, solutionObj);
+    }
+    var tbody = '';
+    const max_t = _.max(tArray);
+    for (let i=0; i<max_t; i++) {
+        var tbodytr = '';
+        for (let j=-1; j<fleetSize; j++) {
+            if (j===-1) {
+                tbodytr += `<td>${i}</td>`
+            } else {
+                var content;
+                if (i >= solutionObj.solution[j].length) {
+                    content = '-';
+                }
+                else {
+                    if (typeof solutionObj.solution[j][i] === 'object') {
+                        content = `${solutionObj.solution[j][i].origin.name}-${solutionObj.solution[j][i].destination.name}`
+                    } else {
+                        
+                        if (solutionObj.solution[j][i] === 'TO') {
+                            content = `<div style="color: green">${solutionObj.solution[j][i]}</div>`
+                        }
+                        if (solutionObj.solution[j][i] === 'IDLE') {
+                            content = `<div style="color: blue">${solutionObj.solution[j][i]}</div>`
+                        }
+                        if (solutionObj.solution[j][i] === 'MAINT') {
+                            content = `<div style="color: orange">${solutionObj.solution[j][i]}</div>`
+                        }
+                    }
+                }
+                tbodytr += `<td>${content}</td>`
+            }
+        }
 
+        const tr = `<tr>${tbodytr}</tr>`
+        tbody += tr;
+    }
+
+    const tableContent = `
+                    <thead>
+                        <tr>
+                            ${theadtr}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tbody}                   
+                    </tbody>
+                `
+    table.innerHTML = tableContent;
+}
 
