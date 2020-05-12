@@ -1,0 +1,9 @@
+.full-height-container {
+    overflow: auto;
+    border-right: 1px solid lightgray;
+    height: 100%;
+}
+
+.chartContainer {
+    margin: 20px;
+}

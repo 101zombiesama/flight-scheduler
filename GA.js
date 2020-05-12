@@ -1,8 +1,5 @@
 // genetic algorithm code for the model
 
-// GOLBAL VARIABLES
-var isSolutionInvalid = false;
-
 // private helper functions
 function scale(num, in_min, in_max, out_min, out_max) {
     return (num - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -108,7 +105,7 @@ function getMaintProbability(ac, freq) {
 function createAircraftSchedule(ac, flights, fleet, airports, maintFreq, maintDuration) {
     const numAircraftFlights = Math.ceil((flights.length) / (fleet.length));
     while (ac.numFlights < numAircraftFlights) {
-        
+        // console.log('loop1');
         // keep trying to choose flight from the flights array until we find a feasible flight. if no feasible flights available, IDLE
         var flightsCopy = _.cloneDeep(flights);
         var flightscopyForMaint = _.cloneDeep(flights);
@@ -136,7 +133,7 @@ function createAircraftSchedule(ac, flights, fleet, airports, maintFreq, maintDu
         if (isMaintFlight === true && mustMaintFlight === false) {
             // choose a random flight which leads to hub if possible. if cant get any, then feasibleMaintFLight = null;
             while(true) {
-                
+                // console.log('loop2');
                 const maintFlight = randChooseFrom(flightscopyForMaint);
                 if (maintFlight[0] === -1) break;
 
@@ -176,7 +173,7 @@ function createAircraftSchedule(ac, flights, fleet, airports, maintFreq, maintDu
             // try to choose a random flight whoch leads to hub, if cant, then invalidSolution = true;
 
             while(true) {
-                
+                // console.log('loop3');
                 const maintFlight = randChooseFrom(flightscopyForMaint);
                 if (maintFlight[0] === -1) {
                     isSolutionInvalid = true;
@@ -234,7 +231,7 @@ function createAircraftSchedule(ac, flights, fleet, airports, maintFreq, maintDu
         else {
 
             while(true) {
-                
+                // console.log('loop4');
                 const flight = randChooseFrom(flightsCopy);
                 // breaking the loop when flightsCopy is empty
                 if (flight[0] === -1) {
@@ -244,10 +241,12 @@ function createAircraftSchedule(ac, flights, fleet, airports, maintFreq, maintDu
                 // skipping the loop is flight is not initiating from ac's current location
                 if (ac.location.length == 0) {
                     if (JSON.stringify(flight[1].origin) !== JSON.stringify(ac.initialLocation)) {
+                        flightsCopy.splice(flight[0], 1);
                         continue;
                     }
                 }
                 else if (JSON.stringify(flight[1].origin) !== JSON.stringify(ac.location[ac.location.length-1])) {
+                    flightsCopy.splice(flight[0], 1);
                     continue;
                 }
     
@@ -304,11 +303,14 @@ function calculateFitness(solution, numFlights) {
 }
 
 
-function createInitialSolutions(n, adjMat, airportsArr, hubs, maintFreq, maintDuration, maxNumSolutions) {
+function createInitialSolutions(n, adjMat, airportsArr, hubs, maintFreq, maintDuration, maxNumSolutions, charts) {
     // solutions is an array for aircraft schedules
     const airports = createAirports(airportsArr, hubs);
     const flights = createFlights(adjMat, airports);
     const solutions = [];
+
+    // clear intermediateSOlutionArray before creating a solution population
+    intermediateSolutionArray = [];
     
     var i = 0;
 
@@ -338,11 +340,14 @@ function createInitialSolutions(n, adjMat, airportsArr, hubs, maintFreq, maintDu
         const fitness = calculateFitness(solution, flights.length);
         const solutionObj = { solution: solution, fitness: fitness, id: i }
 
-        solutions.push(solutionObj);
+        // solutions.push(solutionObj);
+        intermediateSolutionArray.push(solutionObj);
+        // update viz
+        onSolutionCreated(charts.solutionFitnessChart)
 
         i++;
     }
 
-    return solutions;
+    // return solutions;
 
 }
