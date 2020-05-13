@@ -303,6 +303,8 @@ function calculateFitness(solution, numFlights) {
 }
 
 
+
+
 function createInitialSolutions(n, adjMat, airportsArr, hubs, maintFreq, maintDuration, maxNumSolutions, charts) {
     // solutions is an array for aircraft schedules
     const airports = createAirports(airportsArr, hubs);

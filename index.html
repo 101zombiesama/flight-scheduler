@@ -10,6 +10,7 @@
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <script src="loadash.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
+        <script src="progressbar.js-master/dist/progressbar.min.js"></script>
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
         <link rel="stylesheet" href="main.css">
     </head>
@@ -25,20 +26,133 @@
             </div>
         </nav>
 
+        
+        
+        <div class="matrix" style="visibility: hidden;">
+            <div class="card white darken-1">
+                <div class="card-content black-text">
+                    <table id="matrix" class="striped centered">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>AC1</th>
+                                <th>AC2</th>
+                                <th>AC3</th>
+                            </tr>
+                        </thead>
+    
+                        <tbody>
+                            <tr>
+                                <td>0</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>                    
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-action">
+                    <a id="btn-matrixDone" class="waves-effect waves-light btn">Done</a>
+                </div>
+            </div>
+        </div>
+            
+
         <div class="row" style="height: calc(100vh - 64px) !important; margin-bottom: 0px;">
 
             <div class="col s5 full-height-container">
-                <div class="container">
-                    <h5 class="center-align">Analysis</h3>
-                </div>
-                <div class="chartContainer">
-                    <canvas id="myChart"></canvas>
-                    <div class="container">
-                        <a id="btn-solve" class="waves-effect waves-light btn">Solve</a>
+
+
+                <div class="flex-ver">
+
+                    <div class="flex-item">
+                        <div class="flex-hor">
+                            <div class="flex-item">
+                                <div class="flex-hor" style="align-items: center;">
+                                    <div class="flex-item form">
+                                        <div class="row">
+                                            <div class="input-field col s3">
+                                                <input value="50" id="maxNumSolutions" type="number" class="validate">
+                                                <label class="active" for="maxNumSolutions">maxNumSolutions</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="3" id="fleetSize" type="number" class="validate">
+                                                <label class="active" for="fleetSize">fleetSize</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="48" id="maintFreq" type="number" class="validate">
+                                                <label class="active" for="maintFreq">maintFreq</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="4" id="maintDuration" type="number" class="validate">
+                                                <label class="active" for="maintDuration">maintDuration</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="10" id="maxNumGen" type="number" class="validate">
+                                                <label class="active" for="maxNumGen">maxNumGen</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="0.05" step="0.01" max="1" min="0" id="mutationRate" type="number" class="validate">
+                                                <label class="active" for="mutationRate">mutationRate</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="BOM, KLH, PNQ, IGX" id="airports" type="text" class="validate">
+                                                <label class="active" for="airports">Airports</label>
+                                            </div>
+                                            <div class="input-field col s3">
+                                                <input value="BOM" id="hubs" type="text" class="validate">
+                                                <label class="active" for="hubs">Hubs</label>
+                                            </div>
+            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <h5 id="h5-numSolutions">num Solutions: 0</h5>
-                    <h5 id="h5-numFlights">num Flights: 0</h5>
+                    <div class="flex-item">
+                        <div class="flex-hor" style="justify-content: space-between; align-items: center;">
+                            <div class="flex-item">
+                                <div class="flex-ver">
+                                    <div class="flex-item">
+                                        <a id="btn-matrix" class="waves-effect waves-light btn">Matrix</a>
+                                    </div>
+                                    <div class="flex-item">
+                                        <a id="btn-solve" class="waves-effect waves-light btn">Solve</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-item">
+                                <div class="progressBar" id="intermediateProgressBar"></div>
+                                <div class="progressBar" id="solutionProgressBar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-item">
+                        <div class="container">
+                            <h5 class="center-align">Analysis</h3>
+                        </div>
+                    </div>
+                    <div class="flex-item">
+                        <div class="flex-hor" style="justify-content: space-around;">
+                            <h6 id="h6-numFlights">num Flights: 0</h6>
+                            <h6 id="h6-gen">gen: 0</h6>
+                        </div>
+                    </div>
+                    <div class="flex-item">
+                        <div class="chartContainer">
+                            <canvas id="myChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="flex-item">
+                        <div class="chartContainer">
+                            <canvas id="myChart-intermediateSolutions"></canvas>
+                        </div>
+                    </div>
+
                 </div>
+
+
             </div>
       
             <div class="col s7 full-height-container">
@@ -72,5 +186,6 @@
         <script src="main.js"></script>
         <script src="web-worker.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        
     </body>
 </html>

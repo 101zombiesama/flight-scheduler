@@ -4,10 +4,42 @@
     height: 100%;
 }
 
+.flex-ver {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+.flex-hor {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.flex-item {
+    margin: 5px;
+}
+
 .chartContainer {
     margin: 20px;
 }
 
 .brand-logo {
     margin-left: 10px;
+}
+
+.progressBar {
+    width: 100%;
+}
+
+.matrix {
+    position: absolute;
+    height: 80vh;
+    width: 80vw;
+    top: 10vh;
+    left: 10vw;
+    z-index: 2;
 }

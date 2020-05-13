@@ -7,10 +7,6 @@ var isSolutionInvalid = false;
 
 var intermediateSolutionArray = [];
 
-function onSolutionCreated() {
-    postMessage({ name: 'solution', value: intermediateSolutionArray[intermediateSolutionArray.length-1] });
-}
-
 // MODEL //
 
 // Graph related classes and methods
@@ -417,19 +413,19 @@ const calculateFitness = (solution, numFlights) => {
     return fitness;
 }
 
+const normalizeFitness = (fitness, solutions) => {
+    var sum = 0;
+    for (let sol of solutions) {
+        sum += sol.fitness;
+    }
+    return fitness/sum;
+}
 
-const createInitialSolutions = (n, adjMat, airportsArr, hubs, maintFreq, maintDuration, maxNumSolutions) => {
+
+const createInitialSolutions = (n, airports, flights, maintFreq, maintDuration, maxNumSolutions, genHolder) => {
     // solutions is an array for aircraft schedules
-    const airports = createAirports(airportsArr, hubs);
-    const flights = createFlights(adjMat, airports);
-
-    // send number of flights to main.js
-    postMessage({ name: 'numFlights', value: flights.length });
-
-    const solutions = [];
 
     // clear intermediateSOlutionArray before creating a solution population
-    intermediateSolutionArray = [];
     
     var i = 0;
 
@@ -458,19 +454,172 @@ const createInitialSolutions = (n, adjMat, airportsArr, hubs, maintFreq, maintDu
         // calculate fitness for 1 solution
         const fitness = calculateFitness(solution, flights.length);
         const solutionObj = { solution: solution, fitness: fitness, id: i }
-
-        // solutions.push(solutionObj);
-        intermediateSolutionArray.push(solutionObj);
+        genHolder.push(solutionObj);
         // update viz
         onSolutionCreated();
 
         i++;
     }
-    // console.log("flights: ", flights);
-
-    // return solutions;
+    
 
 }
+
+const mutate = (airports, preparedFleet, r) => {
+    const usedAirportIds = preparedFleet.map(ac => ac.initialLocation.id);
+    for (let i=0; i<preparedFleet.length; i++) {
+        if (Math.random() < r) {
+            // choose a random ap such that its id does not exists in usedAirportIds array. i.e randomly choose unassigned ap.
+            
+            while(true) {
+                const ap = randChooseFrom(airports);
+                if (usedAirportIds.indexOf(ap[1].id) === -1) {
+                    preparedFleet[i].initialLocation = ap[1];
+                    usedAirportIds[i] = ap[1].id;
+                    break;
+                }
+            }
+
+
+        }
+    }
+}
+
+const pickOne = (prevSolutions) => {
+    var index = 0;
+    var r = Math.random();
+
+    while(r>0) {
+        r = r - normalizeFitness(prevSolutions[index].fitness, prevSolutions);
+        index++;
+    }
+    index--;
+    return prevSolutions[index];
+    // return randChooseFrom(prevSolutions)[1];
+}
+
+const getInitialFleetFromSolution = (solution) => {
+    const preparedFleet = [];
+    for (let i=0; i<solution.solution.length; i++) {
+        const ac = new Aircraft(`AC${i+1}`, i);
+        ac.initialLocation = solution.solution[i][0].origin;
+        preparedFleet.push(ac);
+    }
+    return preparedFleet;
+}
+
+const createNextGen = (airports, flights, maintFreq, maintDuration, prevGen, genHolder, r, maxNumSolutions) => {
+
+    var i = 0;
+    
+    outerLoop:
+    while (i<maxNumSolutions) {
+        
+        // pick a solution using pickOne, get that solutions preparedFleet(a variable which determines solution)
+        // mutate this preparedFleet and create a new solution.
+        const pickedSolution = pickOne(prevGen);
+        const preparedFleet = getInitialFleetFromSolution(pickedSolution);
+        // console.log("picked solution and its fleet", pickedSolution, preparedFleet)
+        mutate(airports, preparedFleet, r);
+
+        const solution = [];
+        innerLoop:
+        for (let ac of preparedFleet) {
+
+            createAircraftSchedule(ac, flights, preparedFleet, airports, maintFreq, maintDuration);
+            // if the solution is invalid, go back a step in loop, and calculate again. reset the invalid flag to false
+            if (isSolutionInvalid) {
+                console.log("Invalid solution!!");
+                isSolutionInvalid = false;
+                continue outerLoop;
+            }
+            else {
+                solution.push(ac.schedule);
+            }
+            
+        }
+
+        // calculate fitness for 1 solution
+        const fitness = calculateFitness(solution, flights.length);
+        const solutionObj = { solution: solution, fitness: fitness, id: i }
+
+        // solutions.push(solutionObj);
+        genHolder.push(solutionObj);
+        
+        // update viz
+        // onSolutionCreated();
+
+        i++;
+        // send solution number to main.js
+        postMessage({ name: 'onIntermediateSolutions', value: solutionObj });
+    }
+
+}
+
+const getBestOfgen = (gen) => {
+    const fitnessArr = gen.map(sol => sol.fitness);
+    const maxFitness = _.max(fitnessArr);
+    const index = fitnessArr.indexOf(maxFitness);
+    return gen[index];
+}
+
+const getGenFitness = (gen) => {
+    // returns the max fitness of the gen
+    const fitnessArr = gen.map(sol => sol.fitness);
+    const maxFitness = _.max(fitnessArr);
+    return maxFitness;
+}
+
+const onGenCreated = (genId, fitness, currentBestSolution, globalBestSolution) => {
+    postMessage({ name: 'onGenCreated', value: { genId: genId, fitness: fitness, currentBestSolution: currentBestSolution, globalBestSolution: globalBestSolution } });
+}
+
+const onSolutionCreated = () => {
+    postMessage({ name: 'onSolutionCreated', value: globalBest });
+}
+
+// final solve function. combines other functions to get a final solution
+
+var prevGen = [];
+var currentGen = [];
+var currentBest = null;
+var globalBest = null;
+
+function solve(n, airportsArr, hubs, adjMat, maintFreq, maintDuration, maxNumSolutions, maxNumGen, r) {
+    console.log("solving!!!")
+    const airports = createAirports(airportsArr, hubs);
+    const flights = createFlights(adjMat, airports);
+    postMessage({ name: 'numFlights', value: flights.length });
+    // this will populate intersolutions array;
+    createInitialSolutions(n, airports, flights, maintFreq, maintDuration, maxNumSolutions, currentGen);
+    currentBest = getBestOfgen(currentGen);
+    globalBest = currentBest;
+
+    onGenCreated(-1, getGenFitness(currentGen), currentBest);
+
+    prevGen = [...currentGen];
+    currentGen = [];
+
+    for (let i=0; i<maxNumGen; i++) {
+        createNextGen(airports, flights, maintFreq, maintDuration, prevGen, currentGen, r, maxNumSolutions);
+
+        // do the calculation of bestOne here and send it to main for visualization
+        const genFitness = getGenFitness(currentGen);
+
+        currentBest = getBestOfgen(currentGen);
+        if (currentBest.fitness > globalBest.fitness) globalBest = currentBest;
+
+        onGenCreated(i, genFitness, currentBest, globalBest);
+        prevGen = [...currentGen];
+        currentGen = [];
+
+    }
+
+    // after all the generations, currentBest will be the solution, provided that each generation has higher fitness than previous gen
+    onSolutionCreated();
+    console.log("Done!");
+
+}
+
 
 // handling main.js messages and executions
 
@@ -480,9 +629,13 @@ onmessage = (e) => {
 
     switch (data.functionName) {
         case 'createInitialSolutions':
-            createInitialSolutions(data.args[0], data.args[1], data.args[2], data.args[3], data.args[4], data.args[5], data.args[6]);
+            createInitialSolutions(data.args[0], data.args[1], data.args[2], data.args[3], data.args[4], data.args[5], data.args[6], intermediateSolutionArray);
             break;
-    
+
+        case 'solve':
+            postMessage({ name: 'onStart' });
+            solve(data.args[0], data.args[1], data.args[2], data.args[3], data.args[4], data.args[5], data.args[6], data.args[7], data.args[8]);
+            postMessage({ name: 'onDone' });
         default:
             postMessage(`ERROR: function ${data.functionName} doesnt exists`);
             break;
