@@ -19,9 +19,8 @@
             <div class="nav-wrapper">
               <a href="#" class="brand-logo">Flight Scheduler</a>
               <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li><a href="#">Sass</a></li>
-                <li><a href="#">Components</a></li>
-                <li><a href="#">JavaScript</a></li>
+                <li><a id="btn-instructions" href="#">How to use</a></li>
+                
               </ul>
             </div>
         </nav>
@@ -31,6 +30,11 @@
         <div class="matrix" style="visibility: hidden;">
             <div class="card white darken-1">
                 <div class="card-content black-text">
+                    <div class="">
+                        <h6>IMPORTANT: </h6>
+                        <p>Each cell should contain 2 comma separated value "a,b" where a is the number of flights and b is the time taken.
+                             e.g "2,1" in cell [0,1] represents there will be 2 flights from airport 0 to airport 1 and each flight will take 1 unit of time (30 min) </p>
+                    </div>
                     <table id="matrix" class="striped centered">
                         <thead>
                             <tr>
@@ -56,11 +60,28 @@
                 </div>
             </div>
         </div>
-            
+        
+        <div class="instructions" style="visibility: hidden;">
+            <div class="card white darken-1">
+                <div class="card-content black-text">
+                    <h5>How to use:</h5>
+                    <p>1. Set the properties in the form. Fleet size should be less the than number of airports to satisfy maximum capacity of airports which is 1</p>
+                    <p>2. Use comma separated values for airports and hubs</p>
+                    <p>3. Hub should be one of the airports. Maintenance of aircrafts is done at the hubs. there can be multiple hubs</p>
+                    <p>4. Maintenance frequency is after what amount of time maintenance should be done</p>
+                    <p>5. use 1 unit of time = 30 min</p>
+                    <p>6. Create an adjecency matrix by clicking on the "Matrix" button and follow the instructions</p>
+                    <p>7. Finally click the "Solve" button and wait until the calculations are done</p>
+                </div>
+                <div class="card-action">
+                    <a id="btn-instructionsOk" class="waves-effect waves-light btn">Ok</a>
+                </div>
+            </div>
+        </div>
 
         <div class="row" style="height: calc(100vh - 64px) !important; margin-bottom: 0px;">
 
-            <div class="col s5 full-height-container">
+            <div id="left-panel" class="col s5 full-height-container">
 
 
                 <div class="flex-ver">
@@ -118,7 +139,7 @@
                                         <a id="btn-matrix" class="waves-effect waves-light btn">Matrix</a>
                                     </div>
                                     <div class="flex-item">
-                                        <a id="btn-solve" class="waves-effect waves-light btn">Solve</a>
+                                        <a id="btn-solve" class="waves-effect waves-light btn disabled">Solve</a>
                                     </div>
                                 </div>
                             </div>
@@ -179,10 +200,7 @@
       
         </div>
               
-
-        <!-- <script src="global.js"></script>
-        <script src="Model.js"></script>
-        <script src="GA.js"></script> -->
+        <script src="ui.js"></script>
         <script src="main.js"></script>
         <script src="web-worker.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>

@@ -441,7 +441,7 @@ const createInitialSolutions = (n, airports, flights, maintFreq, maintDuration, 
             createAircraftSchedule(ac, flights, preparedFleet, airports, maintFreq, maintDuration);
             // if the solution is invalid, go back a step in loop, and calculate again. reset the invalid flag to false
             if (isSolutionInvalid) {
-                console.log("Invalid solution!!");
+                
                 isSolutionInvalid = false;
                 continue outerLoop;
             }
@@ -528,7 +528,7 @@ const createNextGen = (airports, flights, maintFreq, maintDuration, prevGen, gen
             createAircraftSchedule(ac, flights, preparedFleet, airports, maintFreq, maintDuration);
             // if the solution is invalid, go back a step in loop, and calculate again. reset the invalid flag to false
             if (isSolutionInvalid) {
-                console.log("Invalid solution!!");
+                
                 isSolutionInvalid = false;
                 continue outerLoop;
             }
@@ -585,7 +585,6 @@ var currentBest = null;
 var globalBest = null;
 
 function solve(n, airportsArr, hubs, adjMat, maintFreq, maintDuration, maxNumSolutions, maxNumGen, r) {
-    console.log("solving!!!")
     const airports = createAirports(airportsArr, hubs);
     const flights = createFlights(adjMat, airports);
     postMessage({ name: 'numFlights', value: flights.length });
@@ -616,7 +615,6 @@ function solve(n, airportsArr, hubs, adjMat, maintFreq, maintDuration, maxNumSol
 
     // after all the generations, currentBest will be the solution, provided that each generation has higher fitness than previous gen
     onSolutionCreated();
-    console.log("Done!");
 
 }
 

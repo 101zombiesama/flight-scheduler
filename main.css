@@ -43,3 +43,16 @@
     left: 10vw;
     z-index: 2;
 }
+
+.instructions {
+    position: absolute;
+    height: 70vh;
+    width: 70vw;
+    top: 15vh;
+    left: 15vw;
+    z-index: 2;
+}
+
+#left-panel {
+    scroll-behavior: smooth;
+}
