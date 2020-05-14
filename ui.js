@@ -1,13 +1,17 @@
 function getAirportsArr() {
     const content = document.getElementById('airports').value;
     const arr = content.split(',');
-    return arr;
+    const airportsArr = arr.map(ele => ele.trim());
+    console.log("airportsArr: ", airportsArr)
+    return airportsArr;
 }
 
 function getHubsArr() {
     const content = document.getElementById('hubs').value;
     const arr = content.split(',');
-    return arr;
+    const hubs = arr.map(ele => ele.trim());
+    console.log("hubs: ", hubs);
+    return hubs;
 }
 
 function setMatrixTable(airportsArr) {
